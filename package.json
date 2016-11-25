@@ -1,0 +1,23 @@
+{
+  "name": "react-pouchdb-experiment",
+  "version": "1.0.0",
+  "description": "An experiment with PouchDB using a simple React webclient",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucaswadedavis/pouchdb-experiment.git"
+  },
+  "keywords": [
+    "pouchDB",
+    "react"
+  ],
+  "author": "Luke Davis <lucaswadedavis@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.0"
+  }
+}

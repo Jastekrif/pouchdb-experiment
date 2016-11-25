@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PouchDB Experiment</title>
+        <script src="https://fb.me/react-15.1.0.js"></script>
+        <script src="https://fb.me/react-dom-15.1.0.js"></script>
+        <script src="http://cdn.jsdelivr.net/pouchdb/6.0.7/pouchdb.min.js"></script>
+
+    </head>
+    <body>
+        <div id="main"></div>
+
+        <script>
+            var dbURL = 'http://localhost:5984/todo';
+            // this is the reason Pouch and Couch are so awesome: syncing
+            var remoteDB = new PouchDB(dbURL);
+            var db = new PouchDB('localDB');
+            db.sync(remoteDB, {
+                life: true,
+                retry: true
+            }).on('change', function (change) {
+                // yo, something changed!
+            }).on('paused', function (info) {
+                // replication was paused, usually because of a lost connection
+            }).on('active', function (info) {
+                // replication was resumed
+            }).on('error', function (err) {
+                // totally unhandled error (shouldn't happen)
+            });
+            var _id = 'myTodos';
+
+            var App = React.createClass({
+                getInitialState() {
+                    return {
+                        items: []
+                    }
+                },
+
+                componentDidMount() {
+                    var defaultDoc = {_id: _id, items: []};
+                    // upsert would be better here, maybe add it later
+                    db.get(_id).catch(err => {
+                        return db.put(defaultDoc);
+                    }).then(doc => {
+                        console.log(doc);
+                        console.log(doc.items);
+                        this.setState({items: doc.items || []});
+                    });
+                },
+
+                onSubmit(e) {
+                    e.preventDefault();
+
+                    db.get(_id).then(doc => {
+                        doc.items.push(this.item.value);
+                        this.item.value = '';
+                        return db.put(doc);
+                    }).then( () => {
+                        return db.get(_id);
+                    }).then( doc => {
+                        this.setState({items: doc.items});
+                    });
+                },
+
+                render(){
+                    const items = this.state.items.map( (itemValue, i) =>
+                        React.createElement("li", {key: i}, itemValue)
+                    );
+
+                    const form = React.createElement("form", {onSubmit: this.onSubmit},
+                        React.createElement("input", {ref:(item) => { this.item = item; }}),
+                        React.createElement("input", {type:'submit', value:'add'}),
+                        React.createElement("ul", {}, items)
+                    );
+
+                    const header = React.createElement("h1", {}, "PouchDB Experiment");
+
+                    return React.createElement("div", {}, header, form);
+                }
+            });
+
+            ReactDOM.render(React.createElement(App, {}),
+            document.getElementById('main'));
+
+        </script>
+    </body>
+</html>
